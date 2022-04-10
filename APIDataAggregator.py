@@ -7,7 +7,7 @@ import numpy
 class APIDataAggregator(object):
     def __init__(self, base_url, api_key):
         self.query_param_list = []
-        self.query_param_df = pandas.DataFrame()
+        self.query_param_dashb = pandas.DataFrame()
         self.base_url = base_url
         self.api_key = api_key
 
@@ -26,16 +26,17 @@ class APIDataAggregator(object):
         list_lengths = []
         repeat_elements = []
         repeat_lists = []
+        api_url = []
 
         for qpl_i in self.query_param_list:
             list_lengths.append(len(qpl_i))
+        
         print("lengths of query parameter list of values")
         print(list_lengths)
 
         for length_iter in range(qpl_list_count):
             repeat_elements.append(int(numpy.prod(list_lengths[length_iter + 1:])))
             repeat_lists.append(int(numpy.prod(list_lengths[:length_iter])))
-            exit
         
         print("repeat list multipliers")
         print(repeat_lists)
@@ -50,16 +51,21 @@ class APIDataAggregator(object):
 
             multiplied_lists = numpy.repeat([self.query_param_list[qpdf_iter]], repeat_list_multiplier, axis = 0)
             multiplied_elements_flattened = numpy.repeat(multiplied_lists, repeat_element_multiplier)
+            self.query_param_dashb[col_name] = multiplied_elements_flattened
+        
+        print(self.query_param_dashb)
 
-            self.query_param_df[col_name] = multiplied_elements_flattened
- 
-        print(self.query_param_df)
+        # 
 
-    def api_call(self):
-        api_url = self.base_url + "?page=1&api_key=" + self.api_key # remember to loop through query params modularly
-        query_param_url_str = "/"
-        api_response = requests.get(api_url)
-            
+        col_names = list(self.query_param_dashb.columns)
+        self.query_param_dashb["api_url"] = ""
+        for index, column_name in enumerate(col_names):
+            print("current column {column_name}".format(column_name=column_name))
+            self.query_param_dashb["api_url"] = self.query_param_dashb["api_url"] + self.query_param_dashb[column_name].astype(str) + "/"
+        
+        self.query_param_dashb["api_url"] = self.base_url + self.query_param_dashb["api_url"] + "?page=1&api_key=" + self.api_key
+        self.query_param_dashb["status"] = ""
+        print(self.query_param_dashb["api_url"])
 
     #def check_qp_df():
     #    currentside = randomize_side(); # test code from DICE
@@ -90,10 +96,10 @@ class APIDataAggregator(object):
 
 ## try an api call
 
-#response = requests.get("https://na1.api.riotgames.com/lol/league-exp/v4/entries/" + q + "/" + t + "/" + d + "?page=1&api_key=" + api_key_str)
-#print(str(response.status_code) + " | " + q + " | " +  t + " | " + d)
-#api_obj = json.loads(response.content.decode('utf8'))
-#print(api_obj)
-#df = pandas.DataFrame(api_obj)
-#df.info()
-#print(df)
+# response = requests.get("https://na1.api.riotgames.com/lol/league-exp/v4/entries/" + q + "/" + t + "/" + d + "?page=1&api_key=" + api_key_str)
+# print(str(response.status_code) + " | " + q + " | " +  t + " | " + d)
+# api_obj = json.loads(response.content.decode('utf8'))
+# print(api_obj)
+# df = pandas.DataFrame(api_obj)
+# df.info()
+# print(df)

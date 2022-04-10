@@ -20,11 +20,10 @@ divisions = ["I", "II", "III", "IV"]
 
 # data pulling
 
-### set up API data aggregator obj
-
 apida = APIDataAggregator("https://na1.api.riotgames.com/lol/league-exp/v4/entries/", api_key_str)
 apida.add_query_param_list(queues)
 apida.add_query_param_list(tiers)
 apida.add_query_param_list(divisions)
 apida.convert_query_param_list_to_df()
 apida.clear_query_param_list()
+apida.query_param_dashb.to_csv('check.csv')
