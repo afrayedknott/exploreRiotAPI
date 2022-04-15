@@ -1,13 +1,16 @@
+from typing import final
 import requests
-import sched, time
 import json
-import pandas
+import pandas as pd
 import numpy
+import time
+from requests.adapters import HTTPAdapter
+from requests.packages.urllib3.util.retry import Retry
 
 class APIDataAggregator(object):
     def __init__(self, base_url, api_key):
         self.query_param_list = []
-        self.query_param_dashb = pandas.DataFrame()
+        self.query_param_dashb = pd.DataFrame()
         self.base_url = base_url
         self.api_key = api_key
 
@@ -64,42 +67,42 @@ class APIDataAggregator(object):
             self.query_param_dashb["api_url"] = self.query_param_dashb["api_url"] + self.query_param_dashb[column_name].astype(str) + "/"
         
         self.query_param_dashb["api_url"] = self.base_url + self.query_param_dashb["api_url"] + "?page=1&api_key=" + self.api_key
-        self.query_param_dashb["status"] = ""
         print(self.query_param_dashb["api_url"])
-
-    #def check_qp_df():
-    #    currentside = randomize_side(); # test code from DICE
-    #    return self.count * self.currentside; # test code from DICE
-
-    #def print_status():
-    #    print(str(api_response.status_code) + " | " + q + " | " +  t + " | " + d)
-
-#def loop_action(api_response, q, t, d):
-#    print(str(api_response.status_code) + " | " + q + " | " +  t + " | " + d)
-#    api_obj = json.loads(api_response, sort_keys=True, indent=4)
-#    df = pandas.DataFrame(api_obj)
-
-#for q in queues:
-#    for t in tiers:
-#        for d in divisions:
-
-#            s = sched.scheduler(time.time, time.sleep)
-
-#            first_loop_check = 0
-#            if first_loop_check == 0:
-#                first_loop_check = 1
-
-#            response = requests.get("https://na1.api.riotgames.com/lol/league-exp/v4/entries/" + q + "/" + t + "/" + d + "?page=1&api_key=" + api_key_str)
-            
-#            s.enter(1, 1, loop_action(response, q, t, d))
-#            s.run
-
+    
 ## try an api call
 
-# response = requests.get("https://na1.api.riotgames.com/lol/league-exp/v4/entries/" + q + "/" + t + "/" + d + "?page=1&api_key=" + api_key_str)
-# print(str(response.status_code) + " | " + q + " | " +  t + " | " + d)
-# api_obj = json.loads(response.content.decode('utf8'))
-# print(api_obj)
-# df = pandas.DataFrame(api_obj)
-# df.info()
-# print(df)
+    def data_transfer(self):
+        retry_strategy = Retry(
+            total=3,
+            backoff_factor=2,
+            status_forcelist=[429, 500, 502, 503, 504],
+            method_whitelist=["HEAD", "GET", "OPTIONS"],
+            raise_on_status=False
+        )
+        adapter = HTTPAdapter(max_retries=retry_strategy)
+
+        with requests.Session() as http:
+            http.mount("https://", adapter)
+            http.mount("http://", adapter)
+
+            status_code = []
+            df_list = []
+        
+            for iter, row in self.query_param_dashb.iterrows():
+            
+                print(self.query_param_dashb.loc[iter,:])
+                response = http.get(row["api_url"], timeout=10)
+
+                print(response.status_code)
+                status_code.append(response.status_code)
+
+                api_content = json.loads(response.content.decode('utf8'))
+                df_list.append(pd.DataFrame(api_content))
+            
+                time.sleep(3)
+
+            self.query_param_dashb.insert(0, "status_code", status_code)
+            final_df = pd.concat(df_list)
+
+            print(final_df)
+            final_df.to_csv('content.csv')
