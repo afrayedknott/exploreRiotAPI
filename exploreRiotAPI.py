@@ -41,11 +41,11 @@ else:
     ## url params
 
     ### with code as is, it's important to add path params before query params
-    apida.add_path_params("queue", queues)
-    apida.add_path_params("tier", tiers)
-    apida.add_path_params("division", divisions)
-    apida.add_query_params("page", pages)
-    apida.add_query_params("api_key", [apida.api_key])
+    apida.add_path_params('queue', queues)
+    apida.add_path_params('tier', tiers)
+    apida.add_path_params('division', divisions)
+    apida.add_query_params('page', pages)
+    apida.add_query_params('api_key', [apida.api_key])
 
     ## data transfers and checks
     apida.complete_api_call()

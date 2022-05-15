@@ -94,47 +94,63 @@ class APIDataAggregator(object):
         url_tuples = product(assembled_urls, self.assembled_qps)
         assembled_urls = list("".join(url_tuple) for url_tuple in url_tuples)
 
-        print("assembled urls")
-
-        #assemble the sc_dashb
-        #for db_values in 
-
-        #self.sc_dashb = pd.DataFrame(
-        #    product(),
-        #    columns=self.path_params.keys().append((self.query_params.keys())
-        #)
+        self.dashboard = self.dashboard.drop(columns=['api_key'])
+        
+        print("assembled urls and dropped api key from dashboard")
 
         status_code = []
 
         #if api url has 'page', then do this loop pull
         if 'page' in list(self.dashboard):
             
-            for url in assembled_urls:
+            temp_dashboard = pd.DataFrame(data=None, columns=list(self.dashboard).append(['status_code', 'row_count']))
+            print(temp_dashboard)
+
+            for url_i, url in enumerate(assembled_urls):
                 print("pulling " + url)
+                temp_db_row = self.dashboard.iloc[[url_i]].copy()
 
                 #each iteration of param combo to cycle through pages
                 ## start with first dataset
                 returned_api_call = self._api_call_shunt(url)
                 self.data_payload = returned_api_call['data_payload']
-                status_code.append(returned_api_call['status_code'])
                 expected_rowcount = returned_api_call['data_payload'].shape[0]
-                print("page " + str(1) + " rowcount: " + str(expected_rowcount))
+
+                temp_db_row.loc[:,['status_code']] = returned_api_call['status_code']
+                temp_db_row.loc[:,['row_count']] = expected_rowcount
+
+                temp_dashboard = pd.concat([temp_dashboard, temp_db_row]).reset_index(drop=True)
+
+                print(temp_dashboard)
 
                 #while loop until dataset is shorter than the first page
                 pageiter = 2
                 new_page_url = url.replace("page="+str(pageiter-1), "page="+str(pageiter))
                 rowcount = expected_rowcount
                 while rowcount == expected_rowcount:
+                    temp_db_row = self.dashboard.iloc[[url_i]].copy()
+                    temp_db_row.loc[:,['page']] = pageiter
+                    
                     new_page_url = new_page_url.replace("page="+str(pageiter-1), "page="+str(pageiter))
                     print("pulling " + new_page_url)
 
                     returned_api_call = self._api_call_shunt(new_page_url)
                     pd.concat([self.data_payload, returned_api_call['data_payload']])
                     status_code.append(returned_api_call['status_code'])
-
                     rowcount = len(returned_api_call['data_payload'])
-                    print("page " + str(pageiter) + " rowcount: " + str(rowcount))
+                    
+                    temp_db_row.loc[:,['status_code']] = returned_api_call['status_code']
+                    temp_db_row.loc[:,['row_count']] = rowcount
+                    print(temp_db_row)
+                    temp_dashboard = pd.concat([temp_dashboard, temp_db_row]).reset_index(drop=True)
+                    
+                    temp_dashboard.to_csv('db.csv')
+
                     pageiter+=1
+
+            self.dashboard = temp_dashboard
+            self.dashboard.to_csv('db.csv')
+            print("assign temporary dashboard to the final dashboard")
 
         else:
             returned_api_call = self._api_call_shunt(url)
@@ -148,6 +164,9 @@ class APIDataAggregator(object):
                 returned_api_call = self._api_call_shunt(url)
                 pd.concat([self.data_payload, returned_api_call['data_payload']])
                 status_code.append(returned_api_call['status_code'])
+
+            self.dashboard.loc['status_code'] = status_code
+            print("assign status_code to the final dashboard")
 
     def _api_call_shunt(self, api_url):
 
