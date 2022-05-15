@@ -127,20 +127,26 @@ class APIDataAggregator(object):
                 while rowcount == expected_rowcount:
                     new_page_url = new_page_url.replace("page="+str(pageiter-1), "page="+str(pageiter))
                     print("pulling " + new_page_url)
+
                     returned_api_call = self._api_call_shunt(new_page_url)
-                    pd.concat([self.data_payload,returned_api_call['data_payload']])
+                    pd.concat([self.data_payload, returned_api_call['data_payload']])
                     status_code.append(returned_api_call['status_code'])
+
                     rowcount = len(returned_api_call['data_payload'])
                     print("page " + str(pageiter) + " rowcount: " + str(rowcount))
                     pageiter+=1
 
         else:
+            returned_api_call = self._api_call_shunt(url)
+            self.data_payload = returned_api_call['data_payload']
+            status_code.append(returned_api_call['status_code'])
+            
             for url in assembled_urls:
                 print("pulling " + url)
 
                 #each iteration of param combo
                 returned_api_call = self._api_call_shunt(url)
-                self.data_payload = returned_api_call['data_payload']
+                pd.concat([self.data_payload, returned_api_call['data_payload']])
                 status_code.append(returned_api_call['status_code'])
 
     def _api_call_shunt(self, api_url):
