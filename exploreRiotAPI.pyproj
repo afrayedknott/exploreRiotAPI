@@ -4,14 +4,14 @@
     <SchemaVersion>2.0</SchemaVersion>
     <ProjectGuid>56f086dc-2a16-4e69-a813-58aa57dd1043</ProjectGuid>
     <ProjectHome>.</ProjectHome>
-    <StartupFile>exploreRiotAPI.py</StartupFile>
+    <StartupFile>Main.py</StartupFile>
     <SearchPath>
     </SearchPath>
     <WorkingDirectory>.</WorkingDirectory>
     <OutputPath>.</OutputPath>
     <Name>exploreRiotAPI</Name>
     <RootNamespace>exploreRiotAPI</RootNamespace>
-    <InterpreterId>Global|PythonCore|3.9</InterpreterId>
+    <InterpreterId>CondaEnv|CondaEnv|Anaconda</InterpreterId>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
     <DebugSymbols>true</DebugSymbols>
@@ -23,10 +23,15 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="APIDataAggregator.py" />
-    <Compile Include="exploreRiotAPI.py" />
+    <Compile Include="Main.py" />
+    <Compile Include="SqlHandler.py" />
   </ItemGroup>
   <ItemGroup>
-    <InterpreterReference Include="Global|PythonCore|3.9" />
+    <InterpreterReference Include="CondaEnv|CondaEnv|Anaconda" />
+    <InterpreterReference Include="Global|PythonCore|3.11" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="sql_credentials.json" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)\Python Tools\Microsoft.PythonTools.targets" />
   <!-- Uncomment the CoreCompile target to enable the Build command in

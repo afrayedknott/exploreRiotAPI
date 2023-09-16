@@ -362,7 +362,8 @@ MigrationBackup/
 # Fody - auto-generated XML schema
 FodyWeavers.xsd!
 
-api_key.txt  
+api_key.txt 
+ 
  
 /env
 /api_key.txt
@@ -371,3 +372,4 @@ api_key.txt
 /content.csv
 /sql_credentials.json
 /sql
+config.json

@@ -1,180 +1,164 @@
 from typing import final
 import requests
 from requests.adapters import HTTPAdapter
-from requests.packages.urllib3.util.retry import Retry
+from urllib3.util.retry import Retry
 import json
 import pandas as pd
 import numpy
 import time
+import re
 from itertools import product
+import os
+import numpy
+import SqlHandler
 
 class APIDataAggregator(object):
-    def __init__(self):
-        self.assembled_pps = []
-        self.assembled_qps = []
-        self.base_url = None
-        self.api_key = None
-        self.status_codes = []
-        self.dashboard = pd.DataFrame(data=None, columns=['placeholder'])
-        self.data_payload = None
+    def __init__(self, config_fn):
+        print("instantiatiating an APIDataAggregator Object")
+        # dashboard will let us see the state of api call for each api call
+        self.base_dashboard = pd.DataFrame()
+        self.base_dashboard['status_code'] = [ ]
+        self.base_dashboard['full_url'] = [ ]
+        self.data_payload = pd.DataFrame()
+        self.current_table_name = None
+        self.param_keys = [ ]
+        self.int_iter_param_col_i = [ ]
+        self.int_iter_keys = [ ]
+        with open(config_fn, mode="r") as json_file:
+            self.api_key = json.load(json_file)['api_key']
+            self.info_schema = json.load(json_file)['info_schema']
 
-    def set_api_key(self, api_key_str):
-        self.api_key = api_key_str
-        print("set api key as " + api_key_str)
+        print("set api key as " + self.api_key, end="\n \n")
+        print("\ninfo_schema_json:")
+        print(self.info_schema, end="\n \n")
 
-    def set_base_api_url(self, url_str):
-        self.base_url = url_str
-        print("set base url as " + url_str)
 
-    def add_path_params(self, listname, listvalues):
-        print("adding path parameters")
+
+    def assemble_dashboard(self, table_name):
+
+        print("assembling dashboard for " + table_name)
+        self.current_table_name = table_name
+
+        # put pieces of url into dashboard
+        base_url = self.info_schema[table_name]["source"]["base_url"]
+        path_params = self.info_schema[table_name]["source"]["pathParams"]
+        query_params = self.info_schema[table_name]["source"]["queryParams"]
+
+        self.base_dashboard['base_url'] = [base_url]
+
+        print("adding path parameter values to dashboard \n")
+        for key in path_params.keys():
+            # param_type expected to be of value set ["presets", "int_iter", "long", "databased"]
+            match path_params[key]["param_type"]:
+                case "presets":
+                    print(key + ": preset values pulled from info schema")
+                    temp_pp=pd.DataFrame(path_params[key]["values"], columns=[key])
+                    self.base_dashboard=self.base_dashboard.merge(temp_pp, how='cross')
+                case "int_iter": 
+                    print(key + ": int_iter values pulled from info schema")
+                    temp_pp=pd.DataFrame(path_params[key]["min_value"], columns=[key])
+                    self.base_dashboard=self.base_dashboard.merge(temp_pp, how='cross')
+                case "databased": None # TODO: figure out what to do here
+                case _: None
+        print("finished path parameter values to dashboard \n \n \n")
+
+        print("adding query parameters to dashboard \n")
+        for key in query_params.keys():
+            match query_params[key]["param_type"]:
+                case "presets":
+                    print(key + ": preset values pulled from info schema")
+                    temp_pp=pd.DataFrame([query_params[key]["values"]], columns=[key])
+                    self.base_dashboard=self.base_dashboard.merge(temp_pp, how='cross')
+                case "int_iter": 
+                    print(key + ": int_iter values pulled from info schema")
+                    temp_pp=pd.DataFrame([query_params[key]["min_value"]], columns=[key])
+                    self.base_dashboard=self.base_dashboard.merge(temp_pp, how='cross')
+                case "databased": None # TODO: figure out what to do here
+                case _: None
+        print("finished query parameter values to dashboard \n \n \n")
+        
+        # make full url from all url components
+        print("constructing full urls \n")
+        full_urls = [base_url]
+
+        # identify path param columns in dashboard and how many there are
+        # prepare regex pattern of keys
+        path_param_keys_re_patt = [ "^(" + _ + ")$" for _ in path_params.keys()]
+        path_param_col_i = \
+            self.base_dashboard.columns.str. \
+            match("|".join(path_param_keys_re_patt),case=False)
+        path_param_count = sum(path_param_col_i)
+        print("counting " + str(path_param_count) + " path_params")
+
+        # identify query param columns in dashboard and how many there are
+        query_param_keys_re_patt = [ "^(" + _ + ")$" for _ in query_params.keys()]
+        query_param_col_i = \
+            self.base_dashboard.columns.str. \
+            match("|".join(query_param_keys_re_patt),case=False)
+        query_param_count = sum(query_param_col_i)
+        qp_keys=list(query_params.keys())
+        print("counting " + str(query_param_count) + " query_params \n")
+        
+        print("for api call purposes, identifying which path param and query param are int_iter type")
+        self.int_iter_param_col_i.extend([ path_params.get(_)['param_type'] for _ in path_params ])
+        self.int_iter_param_col_i.extend([ query_params.get(_)['param_type'] for _ in query_params ])
+        self.int_iter_param_col_i = [ _ == "int_iter" for _ in self.int_iter_param_col_i ]
+        self.param_keys = list(path_params.keys())
+        self.param_keys.extend(qp_keys)
+        self.int_iter_keys = [ e for i, e in enumerate(self.param_keys) if self.int_iter_param_col_i[i] == True]
+
+        print("saved to self.int_iter_param_col_i \n \n \n")
+
         pp_sep = "/"
-        temp_pps = pd.DataFrame(data=listvalues, columns=[listname])
-
-        if len(self.assembled_pps) == 0:
-            self.assembled_pps=[pp_sep + _ for _ in listvalues]
-        else:
-            pp_tuples = product(self.assembled_pps, [pp_sep + _ for _ in listvalues])
-            self.assembled_pps = list("".join(_) for _ in pp_tuples)
-
-        if self.dashboard.shape[0] == 0:
-            self.dashboard = temp_pps
-        else:
-            self.dashboard = self.dashboard.merge(temp_pps, how='cross')
-
-        #if len(self.path_params['assembled']) == 0:
-        #    self.path_params['assembled'] = [pp_sep + pp for pp in listvalues]
-        #else:
-        #    temp_pp = [pp_sep + pp for pp in listvalues]
-        #    pp_tuples = product(self.path_params['assembled'], temp_pp)
-        #    self.path_params['assembled'] = list("".join(pp_tuple) for pp_tuple in pp_tuples)
-        print("path parameters: ")
-        print(self.assembled_pps)
-        print(self.dashboard)
-
-    def add_query_params(self, listname, listvalues):
-        print("adding query parameters")
+        param_delim = "?"
         qp_sep = "="
         qp_delim = "&"
-        temp_qps = pd.DataFrame(data=listvalues, columns=[listname])
 
-        if len(self.assembled_qps) == 0:
-            self.assembled_qps=[listname + qp_sep + _ for _ in listvalues]
-        else:
-            qp_tuples = product(self.assembled_qps, [qp_delim + listname + qp_sep + _ for _ in listvalues])
-            self.assembled_qps = list("".join(_) for _ in qp_tuples)
+        # add path params to full url
 
-        if self.dashboard.shape[0] == 0:
-            self.dashboard = temp_qps
-        else:
-            self.dashboard = self.dashboard.merge(temp_qps, how='cross')
-
-        print("query parameters: ")
-        print(self.assembled_qps)
-        print(self.dashboard)
-
-    def clear_query_params(self):
-        self.assembled_qps = {}
-        print("Cleared the query paramaters")
-
-    def clear_path_params(self):
-        self.assembled_pps = {}
-        print("Cleared the path paramaters")
-
-    # create a cartesian product of all the params for easy assembly of the url
-    # eventually integrate this process into add_query_param_list()
-
-## try an api call
-
-    def complete_api_call(self):
-
-        #assemble the api url
-        param_delim = "?"
-        assembled_urls = [self.base_url + _ + param_delim for _ in self.assembled_pps]
-        url_tuples = product(assembled_urls, self.assembled_qps)
-        assembled_urls = list("".join(url_tuple) for url_tuple in url_tuples)
-
-        self.dashboard = self.dashboard.drop(columns=['api_key'])
+        match path_param_count:
+            case 0:
+                print("no path params to add, continuing url assembly")
+            case _:
+                print("adding path_params to full url")
+                pp_conc_list = [pp_sep.join(self.base_dashboard.loc[i, path_param_col_i]) \
+                                for i in range(len(self.base_dashboard))]
+                full_urls = [base_url + pp_sep + _ for _ in pp_conc_list]
+                print("finished path param concatenation \n")
+                
+        print("concatenating query params to url")
         
-        print("assembled urls and dropped api key from dashboard")
+        # add query params to full url
+        match query_param_count:
+            case 0:
+                print("no query params to add, continuing url assembly")
+            case 1:
+                print("adding query_params to full url")
+                # TODO: figure out what to do here, only works assuming int_iter
+                full_urls = [_ + param_delim + qp_keys[0] + qp_sep + query_params.get(qp_keys[0])["min_value"] for _ in full_urls]
+                print("finished query param concatenation \n \n \n")
+            case _:
+                print("adding query_params to full url")
+                # TODO: figure out what to do here
 
-        status_code = []
+                print("finished query param concatenation \n \n \n")
 
-        #if api url has 'page', then do this loop pull
-        if 'page' in list(self.dashboard):
-            
-            temp_dashboard = pd.DataFrame(data=None, columns=list(self.dashboard).append(['status_code', 'row_count']))
-            print(temp_dashboard)
+        full_urls = [_ + qp_delim + "api_key" + qp_sep + self.api_key for _ in full_urls]
+        self.base_dashboard["full_url"] = full_urls
+        self.base_dashboard['status_code'] = 0 # converts status_code col to dtype int because the cross join turns the NaN to float
+        print("api_key added to full url and full url added to dashboard \n")
 
-            for url_i, url in enumerate(assembled_urls):
-                print("pulling " + url)
-                temp_db_row = self.dashboard.iloc[[url_i]].copy()
+        print("finished assembling dashboard \n \n \n")
 
-                #each iteration of param combo to cycle through pages
-                ## start with first dataset
-                returned_api_call = self._api_call_shunt(url)
-                self.data_payload = returned_api_call['data_payload']
-                expected_rowcount = returned_api_call['data_payload'].shape[0]
 
-                temp_db_row.loc[:,['status_code']] = returned_api_call['status_code']
-                temp_db_row.loc[:,['row_count']] = expected_rowcount
 
-                temp_dashboard = pd.concat([temp_dashboard, temp_db_row]).reset_index(drop=True)
-
-                print(temp_dashboard)
-
-                #while loop until dataset is shorter than the first page
-                pageiter = 2
-                new_page_url = url.replace("page="+str(pageiter-1), "page="+str(pageiter))
-                rowcount = expected_rowcount
-                while rowcount == expected_rowcount:
-                    temp_db_row = self.dashboard.iloc[[url_i]].copy()
-                    temp_db_row.loc[:,['page']] = pageiter
-                    
-                    new_page_url = new_page_url.replace("page="+str(pageiter-1), "page="+str(pageiter))
-                    print("pulling " + new_page_url)
-
-                    returned_api_call = self._api_call_shunt(new_page_url)
-                    pd.concat([self.data_payload, returned_api_call['data_payload']])
-                    status_code.append(returned_api_call['status_code'])
-                    rowcount = len(returned_api_call['data_payload'])
-                    
-                    temp_db_row.loc[:,['status_code']] = returned_api_call['status_code']
-                    temp_db_row.loc[:,['row_count']] = rowcount
-                    print(temp_db_row)
-                    temp_dashboard = pd.concat([temp_dashboard, temp_db_row]).reset_index(drop=True)
-                    
-                    temp_dashboard.to_csv('db.csv')
-
-                    pageiter+=1
-
-            self.dashboard = temp_dashboard
-            self.dashboard.to_csv('db.csv')
-            print("assign temporary dashboard to the final dashboard")
-
-        else:
-            returned_api_call = self._api_call_shunt(url)
-            self.data_payload = returned_api_call['data_payload']
-            status_code.append(returned_api_call['status_code'])
-            
-            for url in assembled_urls:
-                print("pulling " + url)
-
-                #each iteration of param combo
-                returned_api_call = self._api_call_shunt(url)
-                pd.concat([self.data_payload, returned_api_call['data_payload']])
-                status_code.append(returned_api_call['status_code'])
-
-            self.dashboard.loc['status_code'] = status_code
-            print("assign status_code to the final dashboard")
-
-    def _api_call_shunt(self, api_url):
+    def call_api(self, api_url):
 
         retry_strategy = Retry(
             total=3,
             backoff_factor=2,
             status_forcelist=[429, 500, 502, 503, 504],
-            method_whitelist=["HEAD", "GET", "OPTIONS"],
+            allowed_methods=["HEAD", "GET", "OPTIONS"],
             raise_on_status=False
         )
         adapter = HTTPAdapter(max_retries=retry_strategy)
@@ -186,13 +170,38 @@ class APIDataAggregator(object):
             response = http.get(api_url, timeout=10)
 
             status_code = response.status_code
-            apicontent_df = pd.DataFrame(json.loads(response.content.decode('utf8')))
-
-            pd.concat([self.data_payload,apicontent_df]).reset_index(drop=True)
+            apicontent_df = pd.DataFrame(json.loads(
+                response.content.decode('utf8'))
+                                         )
+            pd.concat([self.data_payload,apicontent_df]).\
+                reset_index(drop=True)
 
             time.sleep(3)
 
-        return {'status_code': status_code, 
-                'data_payload': apicontent_df}
-                    
+        self.base_dashboard.loc[self.base_dashboard['full_url']==api_url, 'status_code'] = status_code 
+        self.data_payload = apicontent_df
 
+        print(self.base_dashboard.loc[self.base_dashboard['full_url']==api_url, ["status_code"] + self.param_keys])
+
+    def csv_upsave(self, dataframe, filename):
+        #if file exists
+        #   read csv data into dataframe
+        #   append data to csv dataframe
+        #   write the full data back to csv file
+        #else
+        #   write new csv data
+        fp = "./"+filename
+        if os.path.exists(filename):
+            csv_data = pd.read_csv(filename)
+            pd.concat([csv_data, dataframe]).reset_index(drop=True).\
+                to_csv(filename, index = False)
+            print("Saved to " + filename + ".")
+        else:
+            dataframe.to_csv(filename, index = False)
+
+    def csv_delete(self, filename):
+        if os.path.exists(filename):
+            os.remove(filename)
+            print("Deleting " + filename + ".")
+        else:
+            print(filename + " does not exist") 
