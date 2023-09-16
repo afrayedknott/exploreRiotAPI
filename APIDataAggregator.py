@@ -25,8 +25,9 @@ class APIDataAggregator(object):
         self.int_iter_param_col_i = [ ]
         self.int_iter_keys = [ ]
         with open(config_fn, mode="r") as json_file:
-            self.api_key = json.load(json_file)['api_key']
-            self.info_schema = json.load(json_file)['info_schema']
+            data = json.load(json_file)
+            self.api_key = data['api_key']
+            self.info_schema = data['info_schema']
 
         print("set api key as " + self.api_key, end="\n \n")
         print("\ninfo_schema_json:")
