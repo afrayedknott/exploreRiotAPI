@@ -41,23 +41,23 @@ class APIDataAggregator(object):
         self.current_table_name = table_name
 
         # put pieces of url into dashboard
-        base_url = self.info_schema[table_name]["source"]["base_url"]
-        path_params = self.info_schema[table_name]["source"]["pathParams"]
-        query_params = self.info_schema[table_name]["source"]["queryParams"]
+        base_url = self.info_schema[table_name]['source']['base_url']
+        path_params = self.info_schema[table_name]['source']['pathParams']
+        query_params = self.info_schema[table_name]['source']['queryParams']
 
         self.base_dashboard['base_url'] = [base_url]
 
         print("adding path parameter values to dashboard \n")
         for key in path_params.keys():
-            # param_type expected to be of value set ["presets", "int_iter", "long", "databased"]
-            match path_params[key]["param_type"]:
+            # param_type expected to be of value set ['presets", "int_iter", "long", "databased']
+            match path_params[key]['param_type']:
                 case "presets":
                     print(key + ": preset values pulled from info schema")
-                    temp_pp=pd.DataFrame(path_params[key]["values"], columns=[key])
+                    temp_pp=pd.DataFrame(path_params[key]['values'], columns=[key])
                     self.base_dashboard=self.base_dashboard.merge(temp_pp, how='cross')
-                case "int_iter": 
+                case "int_iter" | "long": 
                     print(key + ": int_iter values pulled from info schema")
-                    temp_pp=pd.DataFrame(path_params[key]["min_value"], columns=[key])
+                    temp_pp=pd.DataFrame(path_params[key]['min_value'], columns=[key])
                     self.base_dashboard=self.base_dashboard.merge(temp_pp, how='cross')
                 case "databased": None # TODO: figure out what to do here
                 case _: None
@@ -65,14 +65,14 @@ class APIDataAggregator(object):
 
         print("adding query parameters to dashboard \n")
         for key in query_params.keys():
-            match query_params[key]["param_type"]:
+            match query_params[key]['param_type']:
                 case "presets":
                     print(key + ": preset values pulled from info schema")
-                    temp_pp=pd.DataFrame([query_params[key]["values"]], columns=[key])
+                    temp_pp=pd.DataFrame([query_params[key]['values']], columns=[key])
                     self.base_dashboard=self.base_dashboard.merge(temp_pp, how='cross')
-                case "int_iter": 
+                case "int_iter" | "long": 
                     print(key + ": int_iter values pulled from info schema")
-                    temp_pp=pd.DataFrame([query_params[key]["min_value"]], columns=[key])
+                    temp_pp=pd.DataFrame([query_params[key]['min_value']], columns=[key])
                     self.base_dashboard=self.base_dashboard.merge(temp_pp, how='cross')
                 case "databased": None # TODO: figure out what to do here
                 case _: None
@@ -136,7 +136,7 @@ class APIDataAggregator(object):
             case 1:
                 print("adding query_params to full url")
                 # TODO: figure out what to do here, only works assuming int_iter
-                full_urls = [_ + param_delim + qp_keys[0] + qp_sep + query_params.get(qp_keys[0])["min_value"] for _ in full_urls]
+                full_urls = [_ + param_delim + qp_keys[0] + qp_sep + query_params.get(qp_keys[0])['min_value'] for _ in full_urls]
                 print("finished query param concatenation \n \n \n")
             case _:
                 print("adding query_params to full url")
@@ -145,7 +145,7 @@ class APIDataAggregator(object):
                 print("finished query param concatenation \n \n \n")
 
         full_urls = [_ + qp_delim + "api_key" + qp_sep + self.api_key for _ in full_urls]
-        self.base_dashboard["full_url"] = full_urls
+        self.base_dashboard['full_url'] = full_urls
         self.base_dashboard['status_code'] = 0 # converts status_code col to dtype int because the cross join turns the NaN to float
         print("api_key added to full url and full url added to dashboard \n")
 
@@ -159,7 +159,7 @@ class APIDataAggregator(object):
             total=3,
             backoff_factor=2,
             status_forcelist=[429, 500, 502, 503, 504],
-            allowed_methods=["HEAD", "GET", "OPTIONS"],
+            allowed_methods=['HEAD", "GET", "OPTIONS'],
             raise_on_status=False
         )
         adapter = HTTPAdapter(max_retries=retry_strategy)
@@ -182,7 +182,7 @@ class APIDataAggregator(object):
         self.base_dashboard.loc[self.base_dashboard['full_url']==api_url, 'status_code'] = status_code 
         self.data_payload = apicontent_df
 
-        print(self.base_dashboard.loc[self.base_dashboard['full_url']==api_url, ["status_code"] + self.param_keys])
+        print(self.base_dashboard.loc[self.base_dashboard['full_url']==api_url, ['status_code'] + self.param_keys])
 
     def csv_upsave(self, dataframe, filename):
         #if file exists
@@ -199,10 +199,3 @@ class APIDataAggregator(object):
             print("Saved to " + filename + ".")
         else:
             dataframe.to_csv(filename, index = False)
-
-    def csv_delete(self, filename):
-        if os.path.exists(filename):
-            os.remove(filename)
-            print("Deleting " + filename + ".")
-        else:
-            print(filename + " does not exist") 

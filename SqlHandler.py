@@ -17,11 +17,11 @@ class SqlHandler:
         with open(json_fp, mode="r") as json_file:
             # Store credentials to the global namespace
             self.credentials = json.load(json_file)
-            self.user = self.credentials["user"]
-            self.password = self.credentials["password"]
-            self.database = self.credentials["database"]
-            self.host = self.credentials["host"]
-            self.port = self.credentials["port"]
+            self.user = self.credentials['user']
+            self.password = self.credentials['password']
+            self.database = self.credentials['database']
+            self.host = self.credentials['host']
+            self.port = self.credentials['port']
         self.engine = None
         self.establish_connection()
 
@@ -29,11 +29,11 @@ class SqlHandler:
         try:
             self.engine = \
                 create_engine('postgresql+psycopg2://{0}:{1}@{2}:{3}/{4}'
-                              .format(self.credentials["user"],
-                                      self.credentials["password"],
-                                      self.credentials["host"],
-                                      self.credentials["port"],
-                                      self.credentials["database"]
+                              .format(self.credentials['user'],
+                                      self.credentials['password'],
+                                      self.credentials['host'],
+                                      self.credentials['port'],
+                                      self.credentials['database']
                                       )
                               )
             print('Engine created')
@@ -174,10 +174,10 @@ class SqlHandler:
 #        try:
 #            # Create sqlalchemy engine for pandas df.to_sql function
 #            engine = create_engine('postgresql+psycopg2://{0}:{1}@{2}/{3}'
-#                                    .format(credentials["user"],
-#                                            credentials["password"],
-#                                            credentials["host"],
-#                                            credentials["database"]
+#                                    .format(credentials['user'],
+#                                            credentials['password'],
+#                                            credentials['host'],
+#                                            credentials['database']
 #                                            )
 #                                  )
 #        except Exception as ex:
