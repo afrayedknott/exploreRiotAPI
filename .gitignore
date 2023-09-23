@@ -363,10 +363,10 @@ MigrationBackup/
 FodyWeavers.xsd!
 
 # VS Code
-*.code-workspace
 /.vscode
 
 # my own shit
 /sql
-config.json
+*.json
+*.csv
 

@@ -1,4 +1,0 @@
-status_code,full_url,base_url,queue,tier,division,page
-200,https://na1.api.riotgames.com/lol/league/v4/entries/RANKED_SOLO_5x5/DIAMOND/I?page=1&api_key=RGAPI-5803a902-2927-4179-bd24-a66fccef4377,https://na1.api.riotgames.com/lol/league/v4/entries,RANKED_SOLO_5x5,DIAMOND,I,1
-200,https://na1.api.riotgames.com/lol/league/v4/entries/RANKED_SOLO_5x5/DIAMOND/I?page=2&api_key=RGAPI-5803a902-2927-4179-bd24-a66fccef4377,https://na1.api.riotgames.com/lol/league/v4/entries,RANKED_SOLO_5x5,DIAMOND,I,2
-200,https://na1.api.riotgames.com/lol/league/v4/entries/RANKED_SOLO_5x5/DIAMOND/I?page=3&api_key=RGAPI-5803a902-2927-4179-bd24-a66fccef4377,https://na1.api.riotgames.com/lol/league/v4/entries,RANKED_SOLO_5x5,DIAMOND,I,3
