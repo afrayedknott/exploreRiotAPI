@@ -80,7 +80,7 @@ match int_iter_count:
         higher_int_iter_keys = riot_apida.int_iter_keys[1:]
         highest_int_iter_key_ind = len(higher_int_iter_keys)-1
 
-        for index in riot_apida.base_dashb oard.index:
+        for index in riot_apida.base_dashboard.index:
             # the index range allows it to be saved as a DataFrame, otherwise, it will save as a Series
             # that makes it cleaner to concat the two objects because DataFrame has Index and Series does not
             curr_dashboard_row = riot_apida.base_dashboard.iloc[index:(index+1)]
