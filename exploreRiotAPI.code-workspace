@@ -3,5 +3,12 @@
 		{
 			"path": "."
 		}
-	]
+	],
+	"settings": {
+		"python.autoComplete.extraPaths": [],
+		"python.defaultInterpreterPath": "${workspaceFolder}/.venv",
+		"python.envFile": "${workspaceFolder}/.venv",
+		"python.terminal.launchArgs": [],
+		"python.analysis.extraPaths": []
+	}
 }
