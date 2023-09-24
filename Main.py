@@ -14,7 +14,7 @@ riot_apida.assemble_dashboard("league-exp-v4")
 # until I figure out a good way to continue an interrupted loop
 # based on parameters
 int_iter_count = sum(riot_apida.int_iter_param_col_i)
-full_page_record_count = 200
+full_page_record_count = 205
 current_dashboard = pd.DataFrame(columns = list(riot_apida.base_dashboard.columns))
 curr_date = datetime.datetime.now()
 
@@ -63,9 +63,10 @@ match int_iter_count:
                                         "temp_data_payload" 
                                         + str(int(curr_date.strftime("%Y%m%d%H%M%S"))) 
                                         + ".csv")
-                
-                # TODO: sql upload, oh shit, I gotta make a dashboard for this too OR add to the existing dashboard
+                else: record_count = 0
 
+                # TODO: sql upload, oh shit, I gotta make a dashboard for this too OR add to the existing dashboard
+                
                 first_int_iter += 1
                 curr_url = riot_apida.url_updater(curr_url,
                                                   str(first_int_iter-1),
