@@ -4,16 +4,20 @@ import json
 import pandas as pd
 import numpy
 from APIDataAggregator import APIDataAggregator
+from ParamTypeEnum import ParamType
 import datetime
 
 riot_apida = APIDataAggregator("config.json")
 riot_apida.assemble_dashboard("league-exp-v4")
 
-# testing
+# I decided that Main.py should handle the looping 
+# until I figure out a good way to continue an interrupted loop
+# based on parameters
 int_iter_count = sum(riot_apida.int_iter_param_col_i)
 full_page_record_count = 200
 current_dashboard = pd.DataFrame(columns = list(riot_apida.base_dashboard.columns))
 curr_date = datetime.datetime.now()
+
 match int_iter_count:
     case 0:
         for index in riot_apida.base_dashboard.index:
@@ -43,27 +47,31 @@ match int_iter_count:
             first_int_iter = 1
             record_count = full_page_record_count
             while record_count >= full_page_record_count:
-                riot_apida.call_api(curr_url)
-                record_count = len(riot_apida.data_payload)
-                riot_apida.data_payload[riot_apida.int_iter_keys[0]] = [first_int_iter] * record_count
-                curr_dashboard_row[riot_apida.int_iter_keys[0]] = first_int_iter
-                curr_dashboard_row['full_url'] = curr_url
+                status_code = riot_apida.call_api(curr_url)
+                curr_dashboard_row.loc[:, riot_apida.int_iter_keys[0]] = first_int_iter
+                curr_dashboard_row.loc[:,'full_url'] = curr_url
+                curr_dashboard_row.loc[:,'status_code'] = status_code 
                 current_dashboard = pd.concat([current_dashboard, curr_dashboard_row])
                 riot_apida.csv_upsave(curr_dashboard_row,
                                       "temp_dashboard"
                                       + str(int(curr_date.strftime("%Y%m%d%H%M%S")))
                                       + ".csv")
-                riot_apida.csv_upsave(riot_apida.data_payload,
-                                      "temp_data_payload" 
-                                      + str(int(curr_date.strftime("%Y%m%d%H%M%S"))) 
-                                      + ".csv")
+                if status_code == 200:
+                    record_count = len(riot_apida.data_payload)
+                    riot_apida.data_payload.loc[:,riot_apida.int_iter_keys[0]] = [first_int_iter] * record_count
+                    riot_apida.csv_upsave(riot_apida.data_payload,
+                                        "temp_data_payload" 
+                                        + str(int(curr_date.strftime("%Y%m%d%H%M%S"))) 
+                                        + ".csv")
                 
                 # TODO: sql upload, oh shit, I gotta make a dashboard for this too OR add to the existing dashboard
 
-                finished_query_param_str = riot_apida.int_iter_keys[0] + "=" + str(first_int_iter)
                 first_int_iter += 1
-                new_query_param_str = riot_apida.int_iter_keys[0] + "=" + str(first_int_iter)
-                curr_url = curr_url.replace(finished_query_param_str, new_query_param_str)
+                curr_url = riot_apida.url_updater(curr_url,
+                                                  str(first_int_iter-1),
+                                                  str(first_int_iter),
+                                                  ParamType.QUERY,
+                                                  riot_apida.int_iter_keys[0])
             
     case _:
         final_check = True
@@ -92,10 +100,12 @@ match int_iter_count:
                     # reset the loop except for the highest key we reached
                     higher_int_iter_empty = [ False ] * len(higher_int_iter_dict)
                     curr_higher_key_ind = 0
-                    finished_query_param_str = curr_higher_key + "=" + str(higher_int_iter_dict[curr_higher_key])
                     higher_int_iter_dict[curr_higher_key] = higher_int_iter_dict[curr_higher_key]+1
-                    new_query_param_str = curr_higher_key + "=" + str(higher_int_iter_dict[curr_higher_key])
-                    curr_url = curr_url.replace(finished_query_param_str, new_query_param_str)
+                    curr_url = riot_apida.url_updater(curr_url,
+                                                      str(higher_int_iter_dict[curr_higher_key]-1),
+                                                      str(higher_int_iter_dict[curr_higher_key]),
+                                                      ParamType.QUERY,
+                                                      curr_higher_key)
 
                 else: 
                     # this is the key movement and iter value movement that gets us to final_check == False
@@ -107,10 +117,12 @@ match int_iter_count:
                     curr_higher_key_ind+=1
                     curr_higher_key = higher_int_iter_keys[curr_higher_key_ind]
                     # move up in key value
-                    finished_query_param_str = curr_higher_key + "=" + str(higher_int_iter_dict[curr_higher_key])
                     higher_int_iter_dict[curr_higher_key] = higher_int_iter_dict[curr_higher_key]+1
-                    new_query_param_str = curr_higher_key + "=" + str(higher_int_iter_dict[curr_higher_key])
-                    curr_url = curr_url.replace(finished_query_param_str, new_query_param_str)
+                    curr_url = riot_apida.url_updater(curr_url,
+                                                      str(higher_int_iter_dict[curr_higher_key]-1),
+                                                      str(higher_int_iter_dict[curr_higher_key]),
+                                                      ParamType.QUERY,
+                                                      curr_higher_key)
                 
 
                 
@@ -138,10 +150,11 @@ match int_iter_count:
                     
                     # TODO: sql upload, oh shit, I gotta make a dashboard for this too OR add to the existing dashboard
 
-                    finished_query_param_str = first_int_iter_key + "=" + str(first_int_iter)
                     first_int_iter += 1
-                    new_query_param_str = first_int_iter_key + "=" + str(first_int_iter)
-                    curr_url = curr_url.replace(finished_query_param_str, new_query_param_str)
+                    curr_url = riot_apida.url_updater(curr_url,
+                                                      str(first_int_iter-1),
+                                                      ParamType.QUERY,
+                                                      first_int_iter_key)
 
                     # exit while loop?
                     full_page_check = record_count == full_page_record_count

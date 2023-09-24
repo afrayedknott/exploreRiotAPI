@@ -10,7 +10,7 @@ import re
 from itertools import product
 import os
 import numpy
-import SqlHandler
+from ParamTypeEnum import ParamType
 
 class APIDataAggregator(object):
     def __init__(self, config_fn):
@@ -25,12 +25,17 @@ class APIDataAggregator(object):
         self.int_iter_param_col_i = [ ]
         self.int_iter_keys = [ ]
         with open(config_fn, mode="r") as json_file:
-            self.api_key = json.load(json_file)['api_key']
-            self.info_schema = json.load(json_file)['info_schema']
+            data = json.load(json_file)
+            self.api_key = data['api_key']
+            self.info_schema = data['info_schema']
 
         print("set api key as " + self.api_key, end="\n \n")
         print("\ninfo_schema_json:")
         print(self.info_schema, end="\n \n")
+        self.pp_sep = "/"
+        self.param_delim = "?"
+        self.qp_sep = "="
+        self.qp_delim = "&"
 
 
 
@@ -40,23 +45,23 @@ class APIDataAggregator(object):
         self.current_table_name = table_name
 
         # put pieces of url into dashboard
-        base_url = self.info_schema[table_name]["source"]["base_url"]
-        path_params = self.info_schema[table_name]["source"]["pathParams"]
-        query_params = self.info_schema[table_name]["source"]["queryParams"]
+        base_url = self.info_schema[table_name]['source']['base_url']
+        path_params = self.info_schema[table_name]['source']['pathParams']
+        query_params = self.info_schema[table_name]['source']['queryParams']
 
         self.base_dashboard['base_url'] = [base_url]
 
         print("adding path parameter values to dashboard \n")
         for key in path_params.keys():
-            # param_type expected to be of value set ["presets", "int_iter", "long", "databased"]
-            match path_params[key]["param_type"]:
+            # value_type expected to be of value set ['presets", "int_iter", "long", "databased']
+            match path_params[key]['value_type']:
                 case "presets":
                     print(key + ": preset values pulled from info schema")
-                    temp_pp=pd.DataFrame(path_params[key]["values"], columns=[key])
+                    temp_pp=pd.DataFrame(path_params[key]['values'], columns=[key])
                     self.base_dashboard=self.base_dashboard.merge(temp_pp, how='cross')
-                case "int_iter": 
+                case "int_iter" | "long": 
                     print(key + ": int_iter values pulled from info schema")
-                    temp_pp=pd.DataFrame(path_params[key]["min_value"], columns=[key])
+                    temp_pp=pd.DataFrame(path_params[key]['min_value'], columns=[key])
                     self.base_dashboard=self.base_dashboard.merge(temp_pp, how='cross')
                 case "databased": None # TODO: figure out what to do here
                 case _: None
@@ -64,14 +69,14 @@ class APIDataAggregator(object):
 
         print("adding query parameters to dashboard \n")
         for key in query_params.keys():
-            match query_params[key]["param_type"]:
+            match query_params[key]['value_type']:
                 case "presets":
                     print(key + ": preset values pulled from info schema")
-                    temp_pp=pd.DataFrame([query_params[key]["values"]], columns=[key])
+                    temp_pp=pd.DataFrame([query_params[key]['values']], columns=[key])
                     self.base_dashboard=self.base_dashboard.merge(temp_pp, how='cross')
-                case "int_iter": 
+                case "int_iter" | "long": 
                     print(key + ": int_iter values pulled from info schema")
-                    temp_pp=pd.DataFrame([query_params[key]["min_value"]], columns=[key])
+                    temp_pp=pd.DataFrame([query_params[key]['min_value']], columns=[key])
                     self.base_dashboard=self.base_dashboard.merge(temp_pp, how='cross')
                 case "databased": None # TODO: figure out what to do here
                 case _: None
@@ -100,8 +105,8 @@ class APIDataAggregator(object):
         print("counting " + str(query_param_count) + " query_params \n")
         
         print("for api call purposes, identifying which path param and query param are int_iter type")
-        self.int_iter_param_col_i.extend([ path_params.get(_)['param_type'] for _ in path_params ])
-        self.int_iter_param_col_i.extend([ query_params.get(_)['param_type'] for _ in query_params ])
+        self.int_iter_param_col_i.extend([ path_params.get(_)['value_type'] for _ in path_params ])
+        self.int_iter_param_col_i.extend([ query_params.get(_)['value_type'] for _ in query_params ])
         self.int_iter_param_col_i = [ _ == "int_iter" for _ in self.int_iter_param_col_i ]
         self.param_keys = list(path_params.keys())
         self.param_keys.extend(qp_keys)
@@ -109,10 +114,7 @@ class APIDataAggregator(object):
 
         print("saved to self.int_iter_param_col_i \n \n \n")
 
-        pp_sep = "/"
-        param_delim = "?"
-        qp_sep = "="
-        qp_delim = "&"
+
 
         # add path params to full url
 
@@ -121,9 +123,9 @@ class APIDataAggregator(object):
                 print("no path params to add, continuing url assembly")
             case _:
                 print("adding path_params to full url")
-                pp_conc_list = [pp_sep.join(self.base_dashboard.loc[i, path_param_col_i]) \
+                pp_conc_list = [self.pp_sep.join(self.base_dashboard.loc[i, path_param_col_i]) \
                                 for i in range(len(self.base_dashboard))]
-                full_urls = [base_url + pp_sep + _ for _ in pp_conc_list]
+                full_urls = [base_url + self.pp_sep + _ for _ in pp_conc_list]
                 print("finished path param concatenation \n")
                 
         print("concatenating query params to url")
@@ -135,7 +137,7 @@ class APIDataAggregator(object):
             case 1:
                 print("adding query_params to full url")
                 # TODO: figure out what to do here, only works assuming int_iter
-                full_urls = [_ + param_delim + qp_keys[0] + qp_sep + query_params.get(qp_keys[0])["min_value"] for _ in full_urls]
+                full_urls = [_ + self.param_delim + qp_keys[0] + self.qp_sep + query_params.get(qp_keys[0])['min_value'] for _ in full_urls]
                 print("finished query param concatenation \n \n \n")
             case _:
                 print("adding query_params to full url")
@@ -143,8 +145,8 @@ class APIDataAggregator(object):
 
                 print("finished query param concatenation \n \n \n")
 
-        full_urls = [_ + qp_delim + "api_key" + qp_sep + self.api_key for _ in full_urls]
-        self.base_dashboard["full_url"] = full_urls
+        full_urls = [_ + self.qp_delim + "api_key" + self.qp_sep + self.api_key for _ in full_urls]
+        self.base_dashboard['full_url'] = full_urls
         self.base_dashboard['status_code'] = 0 # converts status_code col to dtype int because the cross join turns the NaN to float
         print("api_key added to full url and full url added to dashboard \n")
 
@@ -158,7 +160,7 @@ class APIDataAggregator(object):
             total=3,
             backoff_factor=2,
             status_forcelist=[429, 500, 502, 503, 504],
-            allowed_methods=["HEAD", "GET", "OPTIONS"],
+            allowed_methods=['HEAD", "GET", "OPTIONS'],
             raise_on_status=False
         )
         adapter = HTTPAdapter(max_retries=retry_strategy)
@@ -178,10 +180,10 @@ class APIDataAggregator(object):
 
             time.sleep(3)
 
-        self.base_dashboard.loc[self.base_dashboard['full_url']==api_url, 'status_code'] = status_code 
         self.data_payload = apicontent_df
+        return status_code 
 
-        print(self.base_dashboard.loc[self.base_dashboard['full_url']==api_url, ["status_code"] + self.param_keys])
+
 
     def csv_upsave(self, dataframe, filename):
         #if file exists
@@ -199,9 +201,22 @@ class APIDataAggregator(object):
         else:
             dataframe.to_csv(filename, index = False)
 
-    def csv_delete(self, filename):
-        if os.path.exists(filename):
-            os.remove(filename)
-            print("Deleting " + filename + ".")
-        else:
-            print(filename + " does not exist") 
+
+
+    def url_updater(self, curr_url: str, old_param_value: str, new_param_value: str, param_type: ParamType, param_name):
+        param_type = ParamType(param_type)
+        if not isinstance(param_type, ParamType):
+            raise TypeError('param_type must be an instance of ParamType Enum')
+        new_url = None
+        match param_type:
+            case ParamType.PATH:
+                finished_path_param_str = self.pp_sep + str(old_param_value)
+                new_path_param_str = self.pp_sep + str(new_param_value)
+                new_url = curr_url.replace(finished_query_param_str, new_path_param_str)
+            case ParamType.QUERY:
+                finished_query_param_str = param_name + self.qp_sep + str(old_param_value)
+                new_query_param_str = param_name + self.qp_sep + str(new_param_value)
+                new_url = curr_url.replace(finished_query_param_str, new_query_param_str)
+            case _:
+                None
+        return new_url
