@@ -80,16 +80,14 @@
 
 [![Product Name Screen Shot][product-screenshot]](https://example.com)
 
-There are many great README templates available on GitHub; however, I didn't find one that really suited my needs so I created this enhanced one. I want to create a README template so amazing that it'll be the last one you ever need -- I think this is it.
+I am building this end-to-end data pipeline to bring Riot Games account and match data to an analyzable state.
 
-Here's why:
-* Your time should be focused on creating something amazing. A project that solves a problem and helps others
-* You shouldn't be doing the same tasks over and over like creating a README from scratch
-* You should implement DRY principles to the rest of your life :smile:
-
-Of course, no one template will serve all projects since your needs may be different. So I'll be adding more in the near future. You may also suggest changes by forking this repo and creating a pull request or opening an issue. Thanks to all the people have contributed to expanding this template!
-
-Use the `BLANK_README.md` to get started.
+Pipeline flow:
+* Pull Ranked player profiles to provide seed data as recommended by Riot Games API developers and community members/managers on their Discord.
+* Pull match history data based on these profiles.
+* Store all the data in a data warehouse.
+* Create live reporting using this data warehouse.
+* Create a data API for this data warehouse.
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
@@ -104,10 +102,8 @@ To get a local copy up and running follow these simple example steps.
 ### Prerequisites
 
 This is an example of how to list things you need to use the software and how to install them.
-* npm
-  ```sh
-  npm install npm@latest -g
-  ```
+* an IDE that can interface with a Python interpreter, ideally, [VS Code](https://code.visualstudio.com/download)
+
 
 ### Installation
 
@@ -191,7 +187,7 @@ Distributed under the MIT License. See `LICENSE.txt` for more information.
 -->
 
 
-<!-- CONTACT 
+
 ## Contact
 
 Eugene Choi - [@afrayedknotty](https://www.threads.net/@afrayedknotty) - eugenechoi86@gmail.com
@@ -199,7 +195,7 @@ Eugene Choi - [@afrayedknotty](https://www.threads.net/@afrayedknotty) - eugenec
 Project Link: [https://github.com/afrayedknott/exploreRiotAPI](https://github.com/afrayedknott/exploreRiotAPI)
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
--->
+
 
 
 <!-- ACKNOWLEDGMENTS 
