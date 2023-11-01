@@ -102,7 +102,7 @@ To get a local copy up and running follow these simple example steps.
 ### Prerequisites
 
 * an IDE that can interface with a Python interpreter, ideally, [VS Code](https://code.visualstudio.com/download)
-* a Python interpreter ([Win](https://www.python.org/downloads/) or [Mac](https://www.python.org/downloads/macos/)
+* a Python interpreter ([Win](https://www.python.org/downloads/) or [Mac](https://www.python.org/downloads/macos/))
 
 
 ### Instructions
