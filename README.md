@@ -85,9 +85,10 @@ I am building this end-to-end data pipeline to bring Riot Games account and matc
 Pipeline flow:
 * Pull Ranked player profiles to provide seed data as recommended by Riot Games API developers and community members/managers on their Discord.
 * Pull match history data based on these profiles.
-* Store all the data in a data warehouse.
-* Create live reporting using this data warehouse.
-* Create a data API for this data warehouse.
+* Store all the data in a data lake.
+* Clean and process data on the way to a data warehouse.
+* Live reporting available from a data warehouse.
+* Data pulling from data API from a data warehouse.
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
@@ -96,18 +97,15 @@ Pipeline flow:
 <!-- GETTING STARTED -->
 ## Getting Started
 
-This is an example of how you may give instructions on setting up your project locally.
 To get a local copy up and running follow these simple example steps.
 
 ### Prerequisites
 
-This is an example of how to list things you need to use the software and how to install them.
 * an IDE that can interface with a Python interpreter, ideally, [VS Code](https://code.visualstudio.com/download)
+* a Python interpreter ([Win](https://www.python.org/downloads/) or [Mac](https://www.python.org/downloads/macos/)
 
 
-### Installation
-
-_Below is an example of how you can instruct your audience on installing and setting up your app. This template doesn't rely on any external dependencies or services._
+### Instructions
 
 1. Get a free API Key at [https://example.com](https://example.com)
 2. Clone the repo
