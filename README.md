@@ -104,21 +104,21 @@ To get a local copy up and running follow these simple example steps.
 * an IDE that can interface with a Python interpreter, ideally, [VS Code](https://code.visualstudio.com/download)
 * a Python interpreter ([Win](https://www.python.org/downloads/) or [Mac](https://www.python.org/downloads/macos/))
 
-
-### Instructions
-
-1. Get a free API Key at [https://example.com](https://example.com)
-2. Clone the repo
-   ```sh
-   git clone https://github.com/your_username_/Project-Name.git
+### Instructions 
+<!-- TODO: include images for almost every step -->
+1. Open VS Code to this project.
+2. Open the Extensions pane, on the left by default, and install the Python extension.
+3. Git clone this repo (easiest way is to open the Source Control pane on the left and click "Clone Repository" and paste in the URL "https://github.com/afrayedknott/exploreRiotAPI.git" at the prompt.
+4. Get the config.json file from [Dropbox](https://example.com) and store it in the parent folder of this repo. <!-- TODO: get the files on Dropbox and share properly. -->
+   * The API key is only valid for 24 hours. Please message me for a refreshed API key.
+   * Replace the API key at the key-value pairing below:
    ```
-3. Install NPM packages
-   ```sh
-   npm install
+   api_key: "#ENTER##API####KEY##HERE#"
    ```
-4. Enter your API in `config.js`
-   ```js
-   const API_KEY = 'ENTER YOUR API';
+6. Install required modules/packages. They are all listed in the requirements.txt file included in the repo. Run the command below in the Terminal:
+   * 
+   ```
+   pip install -r requirements.txt
    ```
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
