@@ -80,7 +80,7 @@
 
 [![Product Name Screen Shot][product-screenshot]](https://example.com)
 
-I am building this end-to-end data pipeline to bring Riot Games account and match data to an analyzable state.
+I am building this end-to-end data pipeline to bring account and match data from the Riot Games Da API to an analyzable state.
 
 Pipeline flow:
 * Pull Ranked player profiles to provide seed data as recommended by Riot Games API developers and community members/managers on their Discord.
@@ -106,17 +106,21 @@ To get a local copy up and running follow these simple example steps.
 
 ### Instructions 
 <!-- TODO: include images for almost every step -->
-1. Open VS Code to this project.
-2. Open the Extensions pane, on the left by default, and install the Python extension.
-3. Git clone this repo (easiest way is to open the Source Control pane on the left and click "Clone Repository" and paste in the URL "https://github.com/afrayedknott/exploreRiotAPI.git" at the prompt.
-4. Get the config.json file from [Dropbox](https://example.com) and store it in the parent folder of this repo. <!-- TODO: get the files on Dropbox and share properly. -->
+1. Install VS Code.
+2. Install Python.
+3. Open VS Code.
+4. Open the Extensions pane, on the left by default, and install the Python extension.
+5. Git clone this repo (easiest way is to open the Source Control pane on the left and click "Clone Repository" and paste in the URL "https://github.com/afrayedknott/exploreRiotAPI.git" at the prompt.
+6. Open the project repo.
+7. Press Ctrl+Shift+P to access the Command Palette (list of preset commands) and search for "Python: Select Interpreter".
+8. Select "Python: Select Interpreter" to get a list of Python interpreters and choose the "Recommended" one.
+9. Get the config.json file from [Dropbox](https://example.com) and store it in the parent folder of this repo. <!-- TODO: get the files on Dropbox and share properly. -->
    * The API key is only valid for 24 hours. Please message me for a refreshed API key.
    * Replace the API key at the key-value pairing below:
    ```
    api_key: "#ENTER##API####KEY##HERE#"
    ```
-6. Install required modules/packages. They are all listed in the requirements.txt file included in the repo. Run the command below in the Terminal:
-   * 
+10. Run the command below in the Terminal to install all the required modules/packages. The modules/packages listed in the requirements.txt file in the repo will be installed.
    ```
    pip install -r requirements.txt
    ```
@@ -128,7 +132,9 @@ To get a local copy up and running follow these simple example steps.
 <!-- USAGE EXAMPLES -->
 ## Usage
 
-Use this space to show useful examples of how a project can be used. Additional screenshots, code examples and demos work well in this space. You may also link to more resources.
+Use this space to show useful examples of h
+
+ow a project can be used. Additional screenshots, code examples and demos work well in this space. You may also link to more resources.
 
 _For more examples, please refer to the [Documentation](https://example.com)_
 
