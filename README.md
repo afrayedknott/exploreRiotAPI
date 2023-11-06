@@ -110,7 +110,7 @@ To get a local copy up and running follow these simple example steps.
 2. Install Python.
 3. Open VS Code.
 4. Open the Extensions pane, on the left by default, and install the Python extension.
-5. Git clone this repo (easiest way is to open the Source Control pane on the left and click "Clone Repository" and paste in the URL "https://github.com/afrayedknott/exploreRiotAPI.git" at the prompt.
+5. Git clone this repo (easiest way is to open the Source Control pane on the left and click "Clone Repository" and paste in the URL "https://github.com/afrayedknott/exploreRiotAPI.git" at the prompt).
 6. Open the project repo.
 7. Press Ctrl+Shift+P to access the Command Palette (list of preset commands) and search for "Python: Select Interpreter".
 8. Select "Python: Select Interpreter" to get a list of Python interpreters and choose the "Recommended" one.
