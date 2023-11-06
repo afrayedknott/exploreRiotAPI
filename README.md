@@ -114,7 +114,7 @@ To get a local copy up and running follow these simple example steps.
 6. Open the project repo.
 7. Press Ctrl+Shift+P to access the Command Palette (list of preset commands) and search for "Python: Select Interpreter".
 8. Select "Python: Select Interpreter" to get a list of Python interpreters and choose the "Recommended" one.
-9. Get the config.json file from [Dropbox](https://example.com) and store it in the parent folder of this repo. <!-- TODO: get the files on Dropbox and share properly. -->
+9. Get the config.json file from [Dropbox](https://www.dropbox.com/scl/fi/a8mjl1q4yhbnz3pjm7sug/config.json?rlkey=uw1j8fdjyh0tqdfmw08soo85x&dl=0) and store it in the parent folder of this repo. <!-- TODO: get the files on Dropbox and share properly. -->
    * The API key is only valid for 24 hours. Please message me for a refreshed API key.
    * Replace the API key at the key-value pairing below:
    ```
