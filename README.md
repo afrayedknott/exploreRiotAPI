@@ -78,7 +78,7 @@
 <!-- ABOUT THE PROJECT -->
 ## About The Project
 
-[![Product Name Screen Shot][product-screenshot]](https://example.com)
+[![Product Name Screen Shot][product-screenshot]](https://example.com) <!-- TODO: Diagram of pipeline perhaps? -->
 
 I am building this end-to-end data pipeline to bring account and match data from the Riot Games Da API to an analyzable state.
 
@@ -116,11 +116,11 @@ To get a local copy up and running follow these simple example steps.
 8. Select "Python: Select Interpreter" to get a list of Python interpreters and choose the "Recommended" one.
 9. Get the config.json file from [Dropbox](https://www.dropbox.com/scl/fi/a8mjl1q4yhbnz3pjm7sug/config.json?rlkey=uw1j8fdjyh0tqdfmw08soo85x&dl=0) and store it in the parent folder of this repo. <!-- TODO: get the files on Dropbox and share properly. -->
    * The API key is only valid for 24 hours. Please message me for a refreshed API key.
-   * Replace the API key at the key-value pairing below:
+   * Open config.json with a text or code editor and replace the API key at the key-value pairing:
    ```
-   api_key: "#ENTER##API####KEY##HERE#"
+   api_key: "##ENTER##API##KEY##HERE##"
    ```
-10. Run the command below in the Terminal to install all the required modules/packages. The modules/packages listed in the requirements.txt file in the repo will be installed.
+10. Run the command below in the Terminal to install all the required modules/packages which are listed in the requirements.txt file in the repo.
    ```
    pip install -r requirements.txt
    ```
@@ -146,7 +146,7 @@ _For more examples, please refer to the [Documentation](https://example.com)_
 ## Roadmap
 
 ### Now
-- [ ] ReadMe with instructions on how non-Python users can run and test the code
+- [x] ReadMe with instructions on how non-Python users can run and test the code
 - [ ] Make required files that shouldn't be held in the repo itself (such as config.json and requirements.txt) easily downloadable
 
 ### Next
@@ -158,6 +158,8 @@ _For more examples, please refer to the [Documentation](https://example.com)_
 - [ ] SQL Handler
 - [ ] Refactor to pipe all the data pulling and data pushing to a postGres db instead
     - [ ] Utilize the JSONB array functionality of postGres to have a hybrid db
+- [ ] ReadMe with images and diagrams for the About Project and Usage section
+- [ ] Set up View Demo
 
 See the [open issues](https://github.com/afrayedknott/exploreRiotAPI/issues) for a full list of proposed features (and known issues).
 
