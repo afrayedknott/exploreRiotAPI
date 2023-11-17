@@ -9,6 +9,7 @@ from itertools import product
 import os
 from ParamTypeEnum import ParamType
 from APIHandler import APIHandler
+from RunModeEnum import RunMode
 
 class LeagueExpV4Handler(object):
     def __init__(self):
@@ -16,7 +17,9 @@ class LeagueExpV4Handler(object):
         self.apiHandler = APIHandler("config.json", "league-exp-v4_schema.json")
         self.apiHandler.assemble_dashboard()
     
-    def api_call_loop(self):
+
+
+    def api_call_loop(self, runmode: RunMode):
 
         batch_meta_fn = self.apiHandler.current_table_name + "_" + "batch_meta.csv"
 
@@ -25,8 +28,8 @@ class LeagueExpV4Handler(object):
             # pull existing batch and batch id
             batch_meta = pd.read_csv(batch_meta_fn)
             batch_id = batch_meta.loc[:,'batch_id'][0]
-            dashboard_fn = self.apiHandler.current_table_name + "_" + "temp_dashboard" + str(batch_id) + ".csv"
-            payload_fn = self.apiHandler.current_table_name + "_" + "temp_data_payload" + str(batch_id) + ".csv"
+            dashboard_fn = self.apiHandler.current_table_name + "_" + "temp_dashboard" + "_" + str(batch_id) + ".csv"
+            payload_fn = self.apiHandler.current_table_name + "_" + "temp_data_payload" + "_" + str(batch_id) + ".csv"
 
             # set loop starting values
             current_dashboard_row = batch_meta.drop(columns=['batch_id'])
@@ -45,8 +48,8 @@ class LeagueExpV4Handler(object):
             current_date = datetime.datetime.now().timestamp()
             decimal_digits = decimal.Decimal(str(current_date))
             batch_id = int(current_date * 10 ** (-1 * decimal_digits.as_tuple().exponent))
-            dashboard_fn = self.apiHandler.current_table_name + "_" + "temp_dashboard" + str(batch_id) + ".csv"
-            payload_fn = self.apiHandler.current_table_name + "_" + "temp_data_payload" + str(batch_id) + ".csv"
+            dashboard_fn = self.apiHandler.current_table_name + "_" + "temp_dashboard" + "_" + str(batch_id) + ".csv"
+            payload_fn = self.apiHandler.current_table_name + "_" + "temp_data_payload" + "_" + str(batch_id) + ".csv"
         
         # loop through int iter for 1 query param > loop through path params
         print("start loop")

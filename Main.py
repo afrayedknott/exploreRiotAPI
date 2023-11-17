@@ -13,22 +13,22 @@ from RunModeEnum import RunMode
 runmode = RunMode(RunMode.CSV_CSV_FULL)
 
 match runmode:
-            case RunMode.CSV_CSV_TESTING:
-                print("")
-            case RunMode.SQL_SQL_TESTING:
-                print("")
-            case RunMode.CSV_SQL_TESTING:
-                print("")
-            case RunMode.SQL_CSV_TESTING:
-                print("")
-            case RunMode.CSV_CSV_FULL:
-                leagueExpV4Handler = LeagueExpV4Handler()
-                leagueExpV4Handler.api_call_loop()
-            case RunMode.SQL_SQL_FULL:
-                print("")
-            case RunMode.CSV_SQL_FULL:
-                print("")
-            case RunMode.SQL_CSV_FULL:
-                print("")
-            case _:
-                print("")
+    case RunMode.CSV_CSV_TESTING:
+        print("")
+    case RunMode.SQL_SQL_TESTING:
+        print("")
+    case RunMode.CSV_SQL_TESTING:
+        print("")
+    case RunMode.SQL_CSV_TESTING:
+        print("")
+    case RunMode.CSV_CSV_FULL:
+        leagueExpV4Handler = LeagueExpV4Handler()
+        leagueExpV4Handler.api_call_loop()
+    case RunMode.SQL_SQL_FULL:
+        print("")
+    case RunMode.CSV_SQL_FULL:
+        print("")
+    case RunMode.SQL_CSV_FULL:
+        print("")
+    case _:
+        print("")
