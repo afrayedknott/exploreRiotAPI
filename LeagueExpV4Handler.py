@@ -21,6 +21,9 @@ class LeagueExpV4Handler(object):
 
     def api_call_loop(self, runmode: RunMode):
 
+        if not isinstance(runmode, RunMode):
+            raise TypeError("param_type must be an instance of RunMode Enum")
+
         batch_meta_fn = self.apiHandler.current_table_name + "_" + "batch_meta.csv"
 
         if os.path.exists(batch_meta_fn):
@@ -95,6 +98,15 @@ class LeagueExpV4Handler(object):
                                                 str(page_iter),
                                                 ParamType.QUERY,
                                                 self.apiHandler.int_iter_keys[0])
+                
+                # test runmode breaks loop after an acceptable amount of data
+                if runmode == RunMode.CSV_CSV_TESTING and page_iter == 5:
+                    break
+            
+            if runmode == RunMode.CSV_CSV_TESTING and index == 5:
+                print("runmode indicates testing therefore limited number of records will pull")
+                break
+
         print("end loop")
         if os.path.exists(batch_meta_fn):
             os.remove(batch_meta_fn)
