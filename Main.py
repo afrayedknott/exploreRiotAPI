@@ -23,7 +23,7 @@ match runmode:
         print("")
     case RunMode.CSV_CSV_FULL:
         leagueExpV4Handler = LeagueExpV4Handler()
-        leagueExpV4Handler.api_call_loop()
+        leagueExpV4Handler.api_call_loop(runmode)
     case RunMode.SQL_SQL_FULL:
         print("")
     case RunMode.CSV_SQL_FULL:
