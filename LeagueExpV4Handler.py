@@ -100,10 +100,10 @@ class LeagueExpV4Handler(object):
                                                 self.apiHandler.int_iter_keys[0])
                 
                 # test runmode breaks loop after an acceptable amount of data
-                if runmode == RunMode.CSV_CSV_TESTING and page_iter == 5:
+                if runmode == RunMode.CSV_CSV_TESTING and page_iter >= 5:
                     break
             
-            if runmode == RunMode.CSV_CSV_TESTING and index == 5:
+            if runmode == RunMode.CSV_CSV_TESTING and index >= 5:
                 print("runmode indicates testing therefore limited number of records will pull")
                 break
 
