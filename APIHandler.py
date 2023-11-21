@@ -203,7 +203,7 @@ class APIHandler(object):
     def url_updater(self, curr_url: str, old_param_value: str, new_param_value: str, param_type: ParamType, param_name):
         param_type = ParamType(param_type)
         if not isinstance(param_type, ParamType):
-            raise TypeError('param_type must be an instance of ParamType Enum')
+            raise TypeError("param_type must be an instance of ParamType Enum")
         new_url = None
         match param_type:
             case ParamType.PATH:
